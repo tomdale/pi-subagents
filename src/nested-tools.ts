@@ -171,7 +171,14 @@ export function createNestedSubagentTools(context: NestedToolContext): ToolDefin
       resume: Type.Optional(Type.String({ description: "Resume a nested agent owned by this parent." })),
       isolated: Type.Optional(Type.Boolean()),
       inherit_context: Type.Optional(Type.Boolean()),
-      isolation: Type.Optional(Type.Literal("worktree")),
+      isolation: Type.Optional(
+        Type.Union([
+          Type.Literal("none", { description: "Run in the current working directory (default)." }),
+          Type.Literal("worktree", { description: "Run in a temporary git worktree." }),
+        ], {
+          description: 'Filesystem isolation mode. Use "none" for normal execution.',
+        }),
+      ),
     }),
     execute: async (_toolCallId, params, signal, _onUpdate, ctx) => {
       if (params.resume) {
@@ -250,7 +257,7 @@ export function createNestedSubagentTools(context: NestedToolContext): ToolDefin
         isolated: invocation.isolated,
         inheritContext: invocation.inheritContext,
         thinkingLevel: invocation.thinking,
-        isolation: invocation.isolation,
+        isolation: invocation.isolation === "none" ? undefined : invocation.isolation,
         invocation: {
           thinking: invocation.thinking,
           maxTurns: invocation.maxTurns,

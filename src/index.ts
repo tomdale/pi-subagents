@@ -960,8 +960,13 @@ Terse command-style prompts produce shallow, generic work.
         }),
       ),
       isolation: Type.Optional(
-        Type.Literal("worktree", {
-          description: 'Set to "worktree" to run the agent in a temporary git worktree (isolated copy of the repo). Changes are saved to a branch on completion.',
+        Type.Union([
+          Type.Literal("none", { description: "Run in the current working directory (default)." }),
+          Type.Literal("worktree", {
+            description: 'Run in a temporary git worktree (isolated copy of the repo). Changes are saved to a branch on completion.',
+          }),
+        ], {
+          description: 'Filesystem isolation mode. Use "none" for the normal current-directory execution.',
         }),
       ),
       ...scheduleParam,
@@ -1136,7 +1141,7 @@ Terse command-style prompts produce shallow, generic work.
       const inheritContext = resolvedConfig.inheritContext;
       const runInBackground = resolvedConfig.runInBackground;
       const isolated = resolvedConfig.isolated;
-      const isolation = resolvedConfig.isolation;
+      const isolation = resolvedConfig.isolation === "none" ? undefined : resolvedConfig.isolation;
       // Whether this spawn writes its .output transcript. Per-agent
       // frontmatter (`output_transcript`) wins; otherwise the project/global
       // default applies. `attachTranscript` below is the SOLE gate — every
